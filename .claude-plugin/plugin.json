@@ -1,0 +1,7 @@
+{
+  "name": "img-viewer",
+  "version": "0.1.0",
+  "description": "Show images in a Claude Code pane: /img <path>, a show_image tool for Claude, and a pane that follows the images Claude reads",
+  "author": { "name": "jenkinv" },
+  "types": "./types/index.d.ts"
+}

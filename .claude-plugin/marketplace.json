@@ -1,0 +1,6 @@
+{
+  "name": "claude-img-viewer",
+  "owner": { "name": "jenkinv" },
+  "description": "Show images inside Claude Code's terminal UI",
+  "plugins": [{ "name": "img-viewer", "source": "./" }]
+}

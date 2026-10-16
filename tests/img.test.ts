@@ -130,6 +130,9 @@ test('/img shows a wide png across the pane', async ($, on) => {
   const ui = await $.ui.mount({ ...pane, props })
   const image = await ui.find({ type: 'Image' })
   expect(image?.props.source).toEqual({ file: '/Users/me/a.png', format: 'png', generation: 1000 })
+  // Shown under ~, so a screenshot of the pane does not name the user
+  expect(image?.props.alt).toBe('~/a.png')
+  expect((await ui.find({ type: 'Text', text: 'a.png' }))?.text).toBe('~/a.png')
   expect(image?.props.columns).toBe(100)
   expect(image?.props.rows).toBe(13)
 })
@@ -304,7 +307,7 @@ test('show_image puts an image in the pane without reading it into context', asy
   const ran = await $.tool.call({ tool: SHOW, path: '~/a.png' })
 
   expect(ran.result).toBe(
-    'The user now sees /Users/me/a.png (400x100) in the image pane. You have not seen its content; use Read if you need to.',
+    'The user now sees ~/a.png (400x100) in the image pane. You have not seen its content; use Read if you need to.',
   )
   expect(opened).toEqual(['img'])
   const ui = await $.ui.mount({ ...pane, props })
@@ -411,4 +414,19 @@ test('without sips or ImageMagick /img says what to install', async ($, on) => {
 
   expect(ran.text).toBe('img-viewer needs ImageMagick on Linux; install it, for example: sudo apt install imagemagick')
   expect(opened).toEqual([])
+})
+
+test('a new picture gets a new Image element, so the terminal does not keep the old size', async ($, on) => {
+  world(on, { width: 400, height: 100 })
+
+  await $.command.run(img('/x/a.png'))
+  const ui = await $.ui.mount({ ...pane, props })
+  const first = (await ui.find({ type: 'Image' }))?.key
+  await $.command.run(img('/x/b.png'))
+  await ui.redraw()
+  const second = (await ui.find({ type: 'Image' }))?.key
+
+  expect(first).toBeDefined()
+  expect(second).toBeDefined()
+  expect(second).not.toBe(first)
 })

@@ -59,8 +59,8 @@ const argv = {
 
 // The Image element reads PNG files only, so anything else is converted first
 const load = async ($: EngineInterface, raw: string): Promise<Shown> => {
-  const home = raw.startsWith('~/') ? await $.env.get('HOME') : undefined
-  const path = home === undefined ? raw : home + raw.slice(1)
+  const home = await $.env.get('HOME')
+  const path = home !== undefined && raw.startsWith('~/') ? home + raw.slice(1) : raw
   const stat = await $.fs.stat(path, { resolve: true }).catch(() => undefined)
   if (stat?.kind !== 'file' || stat.realPath === undefined) throw new Error(`Not a file: ${raw}`)
 
@@ -79,7 +79,11 @@ const load = async ($: EngineInterface, raw: string): Promise<Shown> => {
     await $.process.run(argv.toPng(tool, stat.realPath, png))
   }
 
-  return { path: stat.realPath, png, generation, width: Number(width), height: Number(height) }
+  // Shown under ~ rather than the home folder, whose name is the user's
+  const shownPath =
+    home !== undefined && stat.realPath.startsWith(`${home}/`) ? `~${stat.realPath.slice(home.length)}` : stat.realPath
+
+  return { path: shownPath, png, generation, width: Number(width), height: Number(height) }
 }
 
 const rasters = new Map<string, string>()
@@ -251,8 +255,9 @@ export const register: Register = on => {
       <Box flexDirection="column">
         <Text dimColor>{shown.path}</Text>
         {isKitty ? (
+          // A key per picture: swapping the source of one Image keeps the terminal's old cell grid
           <Image
-            key="img"
+            key={`img-${hash(`${shown.png}:${shown.generation}`)}`}
             source={png !== null ? { png } : { file: shown.png, format: 'png', generation: shown.generation }}
             columns={columns}
             rows={rows}

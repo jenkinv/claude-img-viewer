@@ -2,6 +2,8 @@
 
 A Claude Code mod that shows images inside Claude Code's terminal UI, in a pane beside the conversation.
 
+![Asked in plain words, Claude calls show_image and the picture appears in a pane beside the conversation](docs/screenshot.png)
+
 - `/img <path>` shows an image; `/img` alone opens or closes the pane.
 - Ask in plain words ("show me ~/Desktop/shot.png") and Claude calls the `show_image` tool: the image is shown to you without being read into Claude's context, so it costs no image tokens.
 - While the pane is open it follows the images Claude reads with its Read tool, so you see what Claude is looking at.
